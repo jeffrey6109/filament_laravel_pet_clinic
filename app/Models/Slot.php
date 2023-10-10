@@ -11,6 +11,15 @@ class Slot extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'start' => 'datetime',
+        'end' => 'datetime',
+    ];
+
+    protected $fillable = [
+        'start','end'
+    ];
+
     public function appointment(): HasMany
     {
         return $this->hasMany(Appointment::class);

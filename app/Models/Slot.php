@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Schedule;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +19,14 @@ class Slot extends Model
         'end' => 'datetime',
     ];
 
+    public function formattedTime(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, array $attribute) => Carbon::parse($attribute['start'])->format('h:i A') . ' - ' .
+            Carbon::parse($attribute['end'])->format('h:i A')
+        );
+    }
+
     protected $fillable = [
         'start','end'
     ];
@@ -25,8 +36,8 @@ class Slot extends Model
         return $this->hasMany(Appointment::class);
     }
 
-    public function owner(): BelongsTo
+    public function schedule(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Schedule::class);
     }
 }

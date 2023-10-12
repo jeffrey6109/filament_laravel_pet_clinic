@@ -61,7 +61,6 @@ class PetResource extends Resource
 
                     Select::make('owner_id')
                         ->relationship('owner', 'name')
-                        ->default('No Owner')
                         ->native(false)
                         ->searchable()
                         ->preload()

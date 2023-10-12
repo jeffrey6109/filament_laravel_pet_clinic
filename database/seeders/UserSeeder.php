@@ -13,13 +13,14 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()
+        $adminRole = Role::whereName('admin')->first();
+
+        User::factory()->for($adminRole)
             ->create([
-            'role_id' => Role::whereName('admin')->first()->id, // Foreign key seed
             'phone' => '55512347890',
-            // 'name' => 'admin',
-            // 'email' => 'admin@admin.com',
-            // 'password' => password_hash('admin1234', PASSWORD_DEFAULT)
+            'name' => 'admin',
+            'email' => 'admin@admin.com',
+            'password' => password_hash('admin1234', PASSWORD_DEFAULT)
         ]);
     }
 }

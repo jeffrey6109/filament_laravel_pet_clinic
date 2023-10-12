@@ -9,6 +9,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
 
@@ -41,12 +42,6 @@ class UserResource extends Resource
                         ->preload()
                         ->relationship('role', 'name')
                         ->required(),
-                    Forms\Components\Select::make('clinics')
-                        ->native(false)
-                        ->required()
-                        ->multiple()
-                        ->preload()
-                        ->relationship(name: null, titleAttribute: 'name'),
                     Forms\Components\TextInput::make('password')
                         ->password()
                         ->dehydrateStateUsing(fn ($state) => Hash::make($state))
@@ -77,9 +72,6 @@ class UserResource extends Resource
                     ->badge()
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('clinics.name')
-                    ->badge()
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime('M d Y h:i A')
                     ->sortable()
@@ -89,9 +81,12 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->color('warning'),
-                Tables\Actions\DeleteAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->color('warning'),
+                    Tables\Actions\DeleteAction::make(),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

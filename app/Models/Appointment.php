@@ -17,17 +17,12 @@ class Appointment extends Model
     ];
 
     protected $fillable = [
-        'pet_id','date','start','end','description','status'
+        'pet_id','slot_id','description','status'
     ];
 
     public function pet(): BelongsTo
     {
         return $this->belongsTo(Pet::class);
-    }
-
-    public function clinic(): BelongsToMany
-    {
-        return $this->belongsToMany(Clinic::class);
     }
 
     public function slot(): BelongsTo

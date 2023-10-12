@@ -12,6 +12,10 @@ class Schedule extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'date' => 'datetime'
+    ];
+
     protected $fillable = [
         'date','owner_id'
     ];
@@ -24,10 +28,5 @@ class Schedule extends Model
     public function slots(): HasMany
     {
         return $this->hasMany(Slot::class);
-    }
-
-    public function clinic(): BelongsToMany
-    {
-        return $this->belongsToMany(Clinic::class);
     }
 }

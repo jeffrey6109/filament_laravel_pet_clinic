@@ -7,6 +7,7 @@ use App\Filament\Resources\AppointmentResource\Pages;
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Slot;
+use App\Models\User;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -16,6 +17,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
@@ -40,33 +42,52 @@ class AppointmentResource extends Resource
                         ->required()
                         ->searchable()
                         ->preload(),
+
                     DatePicker::make('date')
                         ->native(false)
+                        ->closeOnDateSelection()
                         ->required()
-                        ->live(),
-                    Select::make('doctor_id')
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set) => $set('doctor', null)),
+
+                    Select::make('doctor')
                         ->options(function (Get $get) use ($doctorRole) {
-                            return Filament::getTenant()
-                                ->users()
-                                ->whereBelongsTo($doctorRole)
+                            return User::whereBelongsTo($doctorRole)
                                 ->whereHas('schedules', function (Builder $query) use ($get) {
                                     $query->where('date', $get('date'));
                                 })
                                 ->get()
                                 ->pluck('name', 'id');
                         })
+                        ->live()
                         ->native(false)
+                        ->required()
+                        ->afterStateUpdated(fn (Set $set) => $set('slot_id', null))
                         ->hidden(fn (Get $get) => blank($get('date'))),
+
                     Select::make('slot_id')
                         ->native(false)
-                        ->relationship(name: 'slot', titleAttribute: 'start')
+                        ->required()
+                        ->relationship(
+                            name: 'slot',
+                            titleAttribute: 'start',
+                            modifyQueryUsing: function (Builder $query, Get $get) {
+                                $doctor = User::find($get('doctor'));
+                                $query->whereHas('schedule', function (Builder $query) use ($doctor) {
+                                    $query->whereBelongsTo($doctor, 'owner');
+                                });
+                            }
+                        )
+                        ->hidden(fn (Get $get) => blank($get('doctor')))
                         ->getOptionLAbelFromRecordUsing(fn (Slot $record) => $record->start->format('h:i A')),
+
                     Select::make('status')
                         ->native(false)
                         ->options(AppointmentStatus::class)
                         ->visibleOn(
                             pages\EditAppointment::class
                         ),
+
                     Textarea::make('description')
                         ->rows(3)
                         ->columnSpanFull(),
@@ -87,16 +108,17 @@ class AppointmentResource extends Resource
                     ->badge(),
                 TextColumn::make('description')
                     ->searchable(),
-                TextColumn::make('date')
-                    ->date()
+                TextColumn::make('slot.schedule.owner.name')
+                    ->label('Doctor')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('start')
-                    ->time('h:i A')
-                    ->label('From')
+                TextColumn::make('slot.schedule.date')
+                    ->label('Appointment Date')
+                    ->date('M d, Y')
                     ->sortable(),
-                TextColumn::make('end')
-                    ->time('h:i A')
-                    ->label('To')
+                TextColumn::make('slot.formattedTime')
+                    ->label('Appointment Time')
+                    ->badge()
                     ->sortable(),
             ])
             ->filters([
@@ -104,9 +126,6 @@ class AppointmentResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make()
-                        ->color('primary'),
-
                     Tables\Actions\Action::make('Confirm')
                         ->action(function (Appointment $record) {
                             $record->status = AppointmentStatus::Confirmed;

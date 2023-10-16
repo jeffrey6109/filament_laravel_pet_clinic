@@ -29,19 +29,30 @@ class UserResource extends Resource
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->maxLength(255),
+
                     Forms\Components\TextInput::make('email')
                         ->email()
                         ->required()
                         ->maxLength(255),
+
                     Forms\Components\TextInput::make('phone')
                         ->tel()
                         ->required()
                         ->maxLength(255),
+
                     Forms\Components\Select::make('role_id')
                         ->native(false)
                         ->preload()
                         ->relationship('role', 'name')
                         ->required(),
+
+                    Forms\Components\Select::make('clinic_id')
+                        ->relationship('clinics', 'name')
+                        ->multiple()
+                        ->preload()
+                        ->searchable()
+                        ->required(),
+
                     Forms\Components\TextInput::make('password')
                         ->password()
                         ->dehydrateStateUsing(fn ($state) => Hash::make($state))
@@ -59,19 +70,29 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('email')
                     ->sortable()
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('phone')
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('clinics.name')
+                    ->badge()
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('role.name')
                     ->badge()
                     ->searchable()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime('M d Y h:i A')
                     ->sortable()

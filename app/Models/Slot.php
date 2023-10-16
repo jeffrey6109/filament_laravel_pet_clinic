@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property string $formatted_time
+ */
 class Slot extends Model
 {
     use HasFactory;
@@ -19,11 +22,15 @@ class Slot extends Model
         'end' => 'datetime',
     ];
 
-    public function formattedTime(): Attribute
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function formattedTime(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, array $attribute) => Carbon::parse($attribute['start'])->format('h:i A') . ' - ' .
-            Carbon::parse($attribute['end'])->format('h:i A')
+            get: fn ($value, array $attribute) =>
+                Carbon::parse($attribute['start'])->format('h:i A') . ' - ' .
+                Carbon::parse($attribute['end'])->format('h:i A')
         );
     }
 

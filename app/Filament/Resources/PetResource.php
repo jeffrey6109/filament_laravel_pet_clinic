@@ -25,6 +25,8 @@ class PetResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
+    protected static?int $navigationSort = 3;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -63,7 +65,14 @@ class PetResource extends Resource
                         ->relationship('owner', 'name')
                         ->native(false)
                         ->searchable()
+                        ->preload(),
+
+                    Select::make('clinic_id')
+                        ->relationship('clinics', 'name')
+                        ->multiple()
                         ->preload()
+                        ->searchable()
+                        ->required(),
                 ])->columns(2)
             ]);
     }
@@ -75,21 +84,32 @@ class PetResource extends Resource
                 ImageColumn::make('avatar')
                     ->size(50)
                     ->circular(),
+
                 TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
+
                 TextColumn::make('date_of_birth')
                     ->date()
                     ->sortable(),
+
                 TextColumn::make('species')
                     ->sortable()
                     ->searchable(),
+
                 TextColumn::make('type')
                     ->sortable()
                     ->searchable(),
+
                 TextColumn::make('owner.name')
                     ->sortable()
                     ->searchable(),
+
+                TextColumn::make('clinics.name')
+                    ->badge()
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('created_at')
                     ->date()
                     ->label('Register on')

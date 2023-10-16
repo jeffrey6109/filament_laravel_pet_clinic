@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DaysOfTheWeek;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,11 +14,12 @@ class Schedule extends Model
     use HasFactory;
 
     protected $casts = [
-        'date' => 'datetime'
+        'date' => 'datetime',
+        'day_of_week' => DaysOfTheWeek::class
     ];
 
     protected $fillable = [
-        'date','owner_id'
+        'date','owner_id','clinic_id','day_of_week'
     ];
 
     public function owner(): BelongsTo
@@ -28,5 +30,10 @@ class Schedule extends Model
     public function slots(): HasMany
     {
         return $this->hasMany(Slot::class);
+    }
+
+    public function clinic(): BelongsTo
+    {
+        return $this->belongsTo(Clinic::class);
     }
 }

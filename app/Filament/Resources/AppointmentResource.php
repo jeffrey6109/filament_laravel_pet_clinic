@@ -31,6 +31,8 @@ class AppointmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
+    protected static?int $navigationSort = 1;
+
     public static function form(Form $form): Form
     {
         $doctorRole = Role::whereName('doctor')->first();
@@ -102,20 +104,25 @@ class AppointmentResource extends Resource
                 TextColumn::make('pet.name')
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('status')
                     ->searchable()
                     ->sortable()
                     ->badge(),
+
                 TextColumn::make('description')
                     ->searchable(),
+
                 TextColumn::make('slot.schedule.owner.name')
                     ->label('Doctor')
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('slot.schedule.date')
                     ->label('Appointment Date')
                     ->date('M d, Y')
                     ->sortable(),
+
                 TextColumn::make('slot.formattedTime')
                     ->label('Appointment Time')
                     ->badge()

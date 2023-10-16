@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements HasTenants, FilamentUser
 {
     use HasApiTokens;
     use HasFactory;
@@ -32,6 +33,7 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'phone',
         'password',
+        'clinic_id'
     ];
 
     /**
@@ -61,6 +63,7 @@ class User extends Authenticatable implements FilamentUser
             'admin' => $role == 'admin',
             'doctor' => $role == 'doctor',
             'owner' =>$role == 'owner',
+            default => false,
         };
     }
 
@@ -72,5 +75,21 @@ class User extends Authenticatable implements FilamentUser
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class, 'owner_id');
+    }
+
+    public function clinics(): BelongsToMany
+    {
+        return $this->belongsToMany(Clinic::class);
+    }
+
+    public function getTenants(Panel $panel): array|Collection
+    {
+        return $this->clinics;
+    }
+
+
+    public function canAccessTenant(Model $tenant): bool
+    {
+        return $this->clinics->contains($tenant);
     }
 }

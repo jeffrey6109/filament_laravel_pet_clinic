@@ -14,12 +14,11 @@ class Schedule extends Model
     use HasFactory;
 
     protected $casts = [
-        'date' => 'datetime',
         'day_of_week' => DaysOfTheWeek::class
     ];
 
     protected $fillable = [
-        'date','owner_id','clinic_id','day_of_week'
+      'owner_id','clinic_id','day_of_week'
     ];
 
     public function owner(): BelongsTo

@@ -38,11 +38,6 @@ class ScheduleResource extends Resource
         return $form
             ->schema([
                 Section::make([
-                    Forms\Components\DatePicker::make('date')
-                        ->native(false)
-                        ->closeOnDateSelection()
-                        ->required(),
-
                     Forms\Components\Select::make('clinic_id')
                         ->relationship('clinic', 'name')
                         ->preload()
@@ -65,6 +60,7 @@ class ScheduleResource extends Resource
                         ->live(),
 
                     Forms\Components\Select::make('day_of_week')
+                        ->required()
                         ->options(DaysOfTheWeek::class)
                         ->native(false),
 

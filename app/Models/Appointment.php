@@ -13,11 +13,12 @@ class Appointment extends Model
     use HasFactory;
 
     protected $casts = [
-        'status' => AppointmentStatus::class
+        'status' => AppointmentStatus::class,
+        'date' => 'date'
     ];
 
     protected $fillable = [
-        'pet_id','slot_id','description','status'
+        'pet_id','slot_id','description','status','clinic_id','date'
     ];
 
     public function pet(): BelongsTo

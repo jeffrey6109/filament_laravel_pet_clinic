@@ -27,12 +27,11 @@ class EditAppointment extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['date'] = $this->record->slot->schedule->date;
         $data['doctor'] = $this->record->slot->schedule->owner_id;
         return $data;
     }
 
-    protected function getRedirectUrl(): string
+    protected function getRedirectUrl(): ?string
     {
         return $this->getResource()::getUrl('index');
     }

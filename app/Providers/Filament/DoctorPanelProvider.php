@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\AssignGlobalScopes;
+use App\Models\Clinic;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -38,6 +39,7 @@ class DoctorPanelProvider extends PanelProvider
             ])
             ->font('roboto')
             ->favicon(asset('images/logo.png'))
+            ->tenant(Clinic::class)
             ->discoverResources(in: app_path('Filament/Doctor/Resources'), for: 'App\\Filament\\Doctor\\Resources')
             ->discoverPages(in: app_path('Filament/Doctor/Pages'), for: 'App\\Filament\\Doctor\\Pages')
             ->pages([
@@ -59,6 +61,7 @@ class DoctorPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 AssignGlobalScopes::class,
+                ApplyTenantScopes::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

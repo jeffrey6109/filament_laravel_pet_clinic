@@ -4,6 +4,7 @@ namespace App\Filament\Doctor\Resources;
 
 use App\Filament\Doctor\Resources\ScheduleResource\Pages;
 use App\Filament\Doctor\Resources\ScheduleResource\RelationManagers;
+use App\Models\Clinic;
 use App\Models\Role;
 use App\Models\Schedule;
 use App\Models\Slot;
@@ -22,6 +23,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 
 class ScheduleResource extends Resource
 {
@@ -29,16 +31,40 @@ class ScheduleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
+    protected static?int $navigationSort = 2;
+
     public static function form(Form $form): Form
     {
         $doctorRole = Role::whereName('doctor')->first();
         return $form
             ->schema([
                 Section::make([
-                    Forms\Components\DatePicker::make('date')
+                    Forms\Components\Select::make('clinic_id')
+                        ->relationship('clinic', 'name')
+                        ->preload()
+                        ->searchable()
+                        ->required()
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set) => $set('owner_id', null)),
+
+                    Forms\Components\Select::make('owner_id')
+                        ->label('Doctor')
+                        ->options(function (Get $get) use ($doctorRole): array|Collection {
+                            return Clinic::find($get('clinic_id'))
+                                ?->users()
+                                ->whereBelongsTo($doctorRole)
+                                ->get()
+                                ->pluck('name', 'id')?? [];
+                        })
                         ->native(false)
-                        ->closeOnDateSelection()
-                        ->required(),
+                        ->required()
+                        ->live(),
+
+                    Forms\Components\Select::make('day_of_week')
+                        ->required()
+                        ->options(DaysOfTheWeek::class)
+                        ->native(false),
+
                     Forms\Components\Repeater::make('slots')
                             ->relationship()
                             ->ColumnSpanFull()
@@ -57,26 +83,28 @@ class ScheduleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->groups([
-                Tables\Grouping\Group::make('date')
+            ->defaultGroup(
+                Tables\Grouping\Group::make('clinic.name')
                     ->collapsible()
-                    ->getTitleFromRecordUsing(fn (Schedule $record) => $record->date->format('M d, Y')),
-            ])
-            ->defaultGroup('date')
+                    ->titlePrefixedWithLabel(false)
+            )
             ->groupsInDropdownOnDesktop()
             ->columns([
                 Tables\Columns\TextColumn::make('date')
                     ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('slots')
-                    ->label('Appointment Time')
+                    ->label('Schedules Time')
                     ->badge()
-                    ->formatStateUsing(fn (Slot $state) => $state->formatted_time),
+                    ->formatStateUsing(fn (Slot $state) => $state->formattedTime),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -87,7 +115,10 @@ class ScheduleResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->color('warning'),
+                    Tables\Actions\DeleteAction::make()
+                        ->before(fn (Schedule $record) => $record->slots()->delete()),
                 ])
             ])
             ->bulkActions([

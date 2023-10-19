@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
+use App\Http\Middleware\ApplyTenantScopes;
 use App\Http\Middleware\AssignGlobalScopes;
 use App\Models\Clinic;
 use Filament\Http\Middleware\Authenticate;
@@ -29,6 +31,7 @@ class DoctorPanelProvider extends PanelProvider
             ->path('doctor')
             ->login()
             ->passwordReset()
+            ->profile(EditProfile::class)
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
@@ -40,6 +43,7 @@ class DoctorPanelProvider extends PanelProvider
             ->font('roboto')
             ->favicon(asset('images/logo.png'))
             ->tenant(Clinic::class)
+            ->tenantMiddleware([ApplyTenantScopes::class], isPersistent: true)
             ->discoverResources(in: app_path('Filament/Doctor/Resources'), for: 'App\\Filament\\Doctor\\Resources')
             ->discoverPages(in: app_path('Filament/Doctor/Pages'), for: 'App\\Filament\\Doctor\\Pages')
             ->pages([
@@ -61,7 +65,6 @@ class DoctorPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 AssignGlobalScopes::class,
-                ApplyTenantScopes::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

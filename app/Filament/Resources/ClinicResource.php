@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClinicResource\Pages;
-use App\Filament\Resources\ClinicResource\RelationManagers;
 use App\Models\Clinic;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -13,8 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ClinicResource extends Resource
 {
@@ -22,7 +18,7 @@ class ClinicResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static?int $navigationSort = 0;
+    protected static ?int $navigationSort = 0;
 
     public static function form(Form $form): Form
     {

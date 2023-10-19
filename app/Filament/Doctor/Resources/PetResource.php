@@ -4,9 +4,7 @@ namespace App\Filament\Doctor\Resources;
 
 use App\Enums\PetSpecies;
 use App\Filament\Doctor\Resources\PetResource\Pages;
-use App\Filament\Doctor\Resources\PetResource\RelationManagers;
 use App\Models\Pet;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -19,8 +17,6 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
 
 class PetResource extends Resource
@@ -29,7 +25,7 @@ class PetResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static?int $navigationSort = 3;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $tenantOwnershipRelationshipName = 'clinics';
 

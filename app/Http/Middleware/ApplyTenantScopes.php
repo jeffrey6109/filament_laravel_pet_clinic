@@ -7,7 +7,6 @@ use Closure;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class ApplyTenantScopes
 {
@@ -18,8 +17,14 @@ class ApplyTenantScopes
      */
     public function handle(Request $request, Closure $next)
     {
+        /**
+         * @var \App\Models\Clinic $clinic The current clinic
+         */
+        $clinic = Filament::getTenant();
         Pet::addGlobalScope(
-            fn (Builder $query) => $query->clinics()->wherePivot('clinic_id', Filament::getTenant()->id),
+            fn (Builder $query) =>
+                $query->whereHas('clinics', fn (Builder $query) =>
+                    $query->where('clinics.id', $clinic->id))
         );
 
         return $next($request);

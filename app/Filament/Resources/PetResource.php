@@ -25,7 +25,7 @@ class PetResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static?int $navigationSort = 3;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {

@@ -14,8 +14,8 @@ use Illuminate\Auth\Events\Registered;
 
 class Register extends BaseRegisterPage
 {
-   public function form(Form $form): Form
-   {
+    public function form(Form $form): Form
+    {
         return $form->schema([
             $this->getNameFormComponent(),
             $this->getEmailFormComponent(),
@@ -26,44 +26,44 @@ class Register extends BaseRegisterPage
             $this->getPasswordConfirmationFormComponent()
         ])
         ->statePath('data');
-   }
+    }
 
-   public function register(): ?RegistrationResponse
-   {
-       try {
-           $this->rateLimit(2);
-       } catch (TooManyRequestsException $exception) {
-           Notification::make()
-               ->title(__('filament-panels::pages/auth/register.notifications.throttled.title', [
-                   'seconds' => $exception->secondsUntilAvailable,
-                   'minutes' => ceil($exception->secondsUntilAvailable / 60),
-               ]))
-               ->body(array_key_exists('body', __('filament-panels::pages/auth/register.notifications.throttled') ?: []) ? __('filament-panels::pages/auth/register.notifications.throttled.body', [
-                   'seconds' => $exception->secondsUntilAvailable,
-                   'minutes' => ceil($exception->secondsUntilAvailable / 60),
-               ]) : null)
-               ->danger()
-               ->send();
+    public function register(): ?RegistrationResponse
+    {
+        try {
+            $this->rateLimit(2);
+        } catch (TooManyRequestsException $exception) {
+            Notification::make()
+                ->title(__('filament-panels::pages/auth/register.notifications.throttled.title', [
+                    'seconds' => $exception->secondsUntilAvailable,
+                    'minutes' => ceil($exception->secondsUntilAvailable / 60),
+                ]))
+                ->body(array_key_exists('body', __('filament-panels::pages/auth/register.notifications.throttled') ?: []) ? __('filament-panels::pages/auth/register.notifications.throttled.body', [
+                    'seconds' => $exception->secondsUntilAvailable,
+                    'minutes' => ceil($exception->secondsUntilAvailable / 60),
+                ]) : null)
+                ->danger()
+                ->send();
 
-           return null;
-       }
+            return null;
+        }
 
-       $data = $this->form->getState();
+        $data = $this->form->getState();
 
-       $data['role_id'] = Role::whereName('owner')->first()->id;
+        $data['role_id'] = Role::whereName('owner')->first()->id;
 
-       $user = $this->getUserModel()::create($data);
+        $user = $this->getUserModel()::create($data);
 
-       app()->bind(
-           \Illuminate\Auth\Listeners\SendEmailVerificationNotification::class,
-           \Filament\Listeners\Auth\SendEmailVerificationNotification::class,
-       );
-       event(new Registered($user));
+        app()->bind(
+            \Illuminate\Auth\Listeners\SendEmailVerificationNotification::class,
+            \Filament\Listeners\Auth\SendEmailVerificationNotification::class,
+        );
+        event(new Registered($user));
 
-       Filament::auth()->login($user);
+        Filament::auth()->login($user);
 
-       session()->regenerate();
+        session()->regenerate();
 
-       return app(RegistrationResponse::class);
-   }
+        return app(RegistrationResponse::class);
+    }
 }

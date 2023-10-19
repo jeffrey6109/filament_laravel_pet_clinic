@@ -4,13 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Enums\DaysOfTheWeek;
 use App\Filament\Resources\ScheduleResource\Pages;
-use App\Filament\Resources\ScheduleResource\RelationManagers;
 use App\Models\Clinic;
 use App\Models\Role;
 use App\Models\Schedule;
 use App\Models\Slot;
-use App\Models\User;
-use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -20,8 +17,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 
 class ScheduleResource extends Resource
@@ -30,7 +25,7 @@ class ScheduleResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clock';
 
-    protected static?int $navigationSort = 2;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -53,7 +48,7 @@ class ScheduleResource extends Resource
                                 ?->users()
                                 ->whereBelongsTo($doctorRole)
                                 ->get()
-                                ->pluck('name', 'id')?? [];
+                                ->pluck('name', 'id') ?? [];
                         })
                         ->native(false)
                         ->required()

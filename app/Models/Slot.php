@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Schedule;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +22,10 @@ class Slot extends Model
         'end' => 'datetime',
     ];
 
+    protected $fillable = [
+        'start','end'
+    ];
+
     /**
      * @return Attribute<string, never>
      */
@@ -34,9 +38,15 @@ class Slot extends Model
         );
     }
 
-    protected $fillable = [
-        'start','end'
-    ];
+    public function scopeAvailableFor(Builder $query, User $doctor, int $dayOfTheWeek, int $clinicId): void
+    {
+        $query->whereHas('schedule', function (Builder $query) use ($doctor, $dayOfTheWeek, $clinicId) {
+            $query
+                ->where('clinic_id', $clinicId)
+                ->where('day_of_week', $dayOfTheWeek)
+                ->whereBelongsTo($doctor, 'owner');
+        });
+    }
 
     public function appointment(): HasMany
     {

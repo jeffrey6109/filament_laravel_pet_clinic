@@ -26,6 +26,11 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Section::make([
+                    Forms\Components\FileUpload::make('avatar_url')
+                        ->label('Avatar')
+                        ->image()
+                        ->imageEditor(),
+
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->maxLength(255),
@@ -37,8 +42,7 @@ class UserResource extends Resource
 
                     Forms\Components\TextInput::make('phone')
                         ->tel()
-                        ->required()
-                        ->maxLength(255),
+                        ->required(),
 
                     Forms\Components\Select::make('role_id')
                         ->native(false)
@@ -50,8 +54,7 @@ class UserResource extends Resource
                         ->relationship('clinics', 'name')
                         ->multiple()
                         ->preload()
-                        ->searchable()
-                        ->required(),
+                        ->searchable(),
 
                     Forms\Components\TextInput::make('password')
                         ->password()
@@ -67,6 +70,11 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('avatar_url')
+                    ->label('Avatar')
+                    ->circular()
+                    ->size(50),
+
                 Tables\Columns\TextColumn::make('name')
                     ->sortable()
                     ->searchable(),

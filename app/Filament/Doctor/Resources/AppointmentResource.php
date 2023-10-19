@@ -4,13 +4,10 @@ namespace App\Filament\Doctor\Resources;
 
 use App\Enums\AppointmentStatus;
 use App\Filament\Doctor\Resources\AppointmentResource\Pages;
-use App\Filament\Doctor\Resources\AppointmentResource\RelationManagers;
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Slot;
-use App\Models\User;
 use Filament\Facades\Filament;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -24,7 +21,6 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 
 class AppointmentResource extends Resource
@@ -33,7 +29,7 @@ class AppointmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
-    protected static?int $navigationSort = 1;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -61,16 +57,10 @@ class AppointmentResource extends Resource
                         ->required()
                         // TODO :move this to the Slot Model
                         ->options(function (Get $get) {
+                            $clinic = Filament::getTenant();
                             $doctor = Filament::auth()->user();
-                                $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
-                                return Slot::whereHas('schedule', function (Builder $query) use ($doctor, $dayOfTheWeek) {
-                                    $query
-                                        ->where('clinic_id', Filament::getTenant()->id)
-                                        ->where('day_of_week', $dayOfTheWeek)
-                                        ->whereBelongsTo($doctor, 'owner');
-                                })
-                                ->get()
-                                ->pluck('formattedTime', 'id');
+                            $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
+                            return Slot::availableFor($doctor, $dayOfTheWeek, $clinic->id)->get()->pluck('formattedTime', 'id');
                         })
                         ->hidden(fn (Get $get) => blank($get('date'))),
 

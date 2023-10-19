@@ -6,15 +6,12 @@ use App\Enums\AppointmentStatus;
 use App\Filament\Resources\AppointmentResource\Pages;
 use App\Models\Appointment;
 use App\Models\Role;
-use App\Models\Schedule;
 use App\Models\Slot;
 use App\Models\User;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TimePicker;
 use Illuminate\Support\Carbon;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -32,7 +29,7 @@ class AppointmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
-    protected static?int $navigationSort = 1;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -62,7 +59,8 @@ class AppointmentResource extends Resource
                         ->closeOnDateSelection()
                         ->required()
                         ->live()
-                        ->afterStateUpdated(fn (Set $set) => $set('doctor_id', null)),
+                        ->afterStateUpdated(fn (Set $set) => $set('doctor_id', null))
+                        ->hidden(fn (Get $get) => blank($get('clinic_id'))),
 
                     Select::make('doctor_id')
                         ->label('Doctor')
@@ -86,22 +84,13 @@ class AppointmentResource extends Resource
                         ->native(false)
                         ->label('Slot')
                         ->required()
-                        // TODO :move this to the Slot Model
-                        // ->options(fn () => Slot::getAvailable())
-                        ->relationship(
-                            name: 'slot',
-                            titleAttribute: 'start',
-                            modifyQueryUsing: function (Builder $query, Get $get) {
+                        ->options(function (Get $get) {
                                 $doctor = User::find($get('doctor_id'));
                                 $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
-                                $query->whereHas('schedule', function (Builder $query) use ($doctor, $dayOfTheWeek, $get) {
-                                    $query
-                                        ->where('clinic_id', $get('clinic_id'))
-                                        ->where('day_of_week', $dayOfTheWeek)
-                                        ->whereBelongsTo($doctor, 'owner');
-                                });
-                            }
-                        )
+                                $clinicId = $get('clinic_id');
+
+                                return $clinicId ? Slot::availableFor($doctor, $dayOfTheWeek, $clinicId)->get()->pluck('formattedTime', 'id') : [];
+                         })
                         ->hidden(fn (Get $get) => blank($get('doctor_id')))
                         ->getOptionLAbelFromRecordUsing(fn (Slot $record) => $record->formattedTime),
 

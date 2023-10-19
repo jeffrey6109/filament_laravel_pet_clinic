@@ -55,7 +55,6 @@ class AppointmentResource extends Resource
                         ->native(false)
                         ->label('Slot')
                         ->required()
-                        // TODO :move this to the Slot Model
                         ->options(function (Get $get) {
                             $clinic = Filament::getTenant();
                             $doctor = Filament::auth()->user();

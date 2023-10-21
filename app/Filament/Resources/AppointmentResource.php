@@ -22,6 +22,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class AppointmentResource extends Resource
 {
@@ -78,7 +79,18 @@ class AppointmentResource extends Resource
                         ->native(false)
                         ->required()
                         ->afterStateUpdated(fn (Set $set) => $set('slot_id', null))
-                        ->hidden(fn (Get $get) => blank($get('date'))),
+                        ->hidden(fn (Get $get) => blank($get('date')))
+                        ->helperText(function (Select $component) {
+                            if(! $component->getOptions()) {
+                                return new HtmlString(
+                                    '<span class="text-sm text-danger-600 dark:text-danger-400">
+                                        No Doctors available. Please select a different Clinic or Date
+                                    </span>'
+                                );
+                            }
+
+                            return '';
+                        }),
 
                     Select::make('slot_id')
                         ->native(false)
@@ -194,5 +206,10 @@ class AppointmentResource extends Resource
             'create' => Pages\CreateAppointment::route('/create'),
             'edit' => Pages\EditAppointment::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::new()->count();
     }
 }

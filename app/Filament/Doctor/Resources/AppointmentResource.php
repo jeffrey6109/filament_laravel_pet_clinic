@@ -4,6 +4,7 @@ namespace App\Filament\Doctor\Resources;
 
 use App\Enums\AppointmentStatus;
 use App\Filament\Doctor\Resources\AppointmentResource\Pages;
+use App\Filament\Doctor\Resources\AppointmentResource\RelationManagers\NotesRelationManager;
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Slot;
@@ -22,6 +23,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\HtmlString;
 
 class AppointmentResource extends Resource
 {
@@ -41,7 +43,14 @@ class AppointmentResource extends Resource
                         ->relationship('pet', 'name')
                         ->required()
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->helperText(fn () =>
+                            Filament::getTenant()->pets->isEmpty() ? new HtmlString(
+                                '<span class="text-sm text-danger-600 dark:text-danger-400">
+                                    No pets available for this clinic.
+                                </span>'
+                            ) : ''
+                        ),
 
                     DatePicker::make('date')
                         ->native(false)
@@ -60,6 +69,17 @@ class AppointmentResource extends Resource
                             $doctor = Filament::auth()->user();
                             $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
                             return Slot::availableFor($doctor, $dayOfTheWeek, $clinic->id)->get()->pluck('formattedTime', 'id');
+                        })
+                        ->helperText(function (Select $component) {
+                            if(! $component->getOptions()) {
+                                return new HtmlString(
+                                    '<span class="text-sm text-danger-600 dark:text-danger-400">
+                                        No slots available. Please select a different Date
+                                    </span>'
+                                );
+                            }
+
+                            return '';
                         })
                         ->hidden(fn (Get $get) => blank($get('date'))),
 
@@ -142,7 +162,7 @@ class AppointmentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            NotesRelationManager::class,
         ];
     }
 
@@ -153,5 +173,15 @@ class AppointmentResource extends Resource
             'create' => Pages\CreateAppointment::route('/create'),
             'edit' => Pages\EditAppointment::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::new()->count() ;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning' ;
     }
 }

@@ -16,6 +16,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 
@@ -116,7 +117,10 @@ class PetResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('clinics')
+                    ->relationship('clinics', 'name')
+                    ->multiple()
+                    ->preload(),
             ])
             ->actions([
                 ActionGroup::make([

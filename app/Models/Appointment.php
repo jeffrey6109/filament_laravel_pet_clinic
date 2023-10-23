@@ -47,9 +47,9 @@ class Appointment extends Model
         $query->whereStatus(AppointmentStatus::Created);
     }
 
-     /**
-     * Get all of the appointment's notes
-     */
+    /**
+    * Get all of the appointment's notes
+    */
     public function notes(): MorphMany
     {
         return $this->morphMany(Note::class, 'notable');

@@ -21,7 +21,6 @@ use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 
@@ -44,7 +43,8 @@ class AppointmentResource extends Resource
                         ->required()
                         ->searchable()
                         ->preload()
-                        ->helperText(fn () =>
+                        ->helperText(
+                            fn () =>
                             Filament::getTenant()->pets->isEmpty() ? new HtmlString(
                                 '<span class="text-sm text-danger-600 dark:text-danger-400">
                                     No pets available for this clinic.

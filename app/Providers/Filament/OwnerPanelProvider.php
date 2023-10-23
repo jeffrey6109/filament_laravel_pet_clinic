@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Owner\Pages\Auth\Register;
+use App\Filament\Pages\Auth\EditProfile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -29,6 +30,7 @@ class OwnerPanelProvider extends PanelProvider
             ->login()
             ->registration(Register::class)
             ->passwordReset()
+            ->profile(EditProfile::class)
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,

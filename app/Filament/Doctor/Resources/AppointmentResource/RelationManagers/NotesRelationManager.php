@@ -3,16 +3,11 @@
 namespace App\Filament\Doctor\Resources\AppointmentResource\RelationManagers;
 
 use App\Models\Note;
-use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Columns\Layout\Split;
-use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class NotesRelationManager extends RelationManager
 {
@@ -35,7 +30,7 @@ class NotesRelationManager extends RelationManager
             ->columns([
                         Tables\Columns\TextColumn::make('body')
                             ->html()
-                            ->description(fn (Note $record): string => 'Created on ' . $record->created_at->format('M d, Y') , position: 'below')
+                            ->description(fn (Note $record): string => 'Created on ' . $record->created_at->format('M d, Y'), position: 'below')
                             ->limit(255)
                     ])
 

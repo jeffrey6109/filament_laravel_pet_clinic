@@ -12,6 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Carbon;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -97,12 +98,12 @@ class AppointmentResource extends Resource
                         ->label('Slot')
                         ->required()
                         ->options(function (Get $get) {
-                                $doctor = User::find($get('doctor_id'));
-                                $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
-                                $clinicId = $get('clinic_id');
+                            $doctor = User::find($get('doctor_id'));
+                            $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
+                            $clinicId = $get('clinic_id');
 
-                                return $clinicId ? Slot::availableFor($doctor, $dayOfTheWeek, $clinicId)->get()->pluck('formattedTime', 'id') : [];
-                         })
+                            return $clinicId ? Slot::availableFor($doctor, $dayOfTheWeek, $clinicId)->get()->pluck('formattedTime', 'id') : [];
+                        })
                         ->hidden(fn (Get $get) => blank($get('doctor_id')))
                         ->getOptionLAbelFromRecordUsing(fn (Slot $record) => $record->formattedTime),
 
@@ -123,6 +124,8 @@ class AppointmentResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $doctorRole = Role::whereName('doctor')->first();
+
         return $table
             ->columns([
                 TextColumn::make('pet.name')
@@ -158,8 +161,20 @@ class AppointmentResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
-            ])
+                SelectFilter::make('clinics')
+                    ->relationship('clinic', 'name')
+                    ->multiple()
+                    ->preload(),
+
+                SelectFilter::make('doctors')
+                    //ToDo: rework the $query into a private function
+                    ->relationship('doctor', 'name', modifyQueryUsing: fn (Builder $query) => $query->where('role_id', $doctorRole->id))
+                    ->multiple()
+                    ->preload(),
+
+                SelectFilter::make('status')
+                    ->options(AppointmentStatus::class),
+            ]) ->filtersFormColumns(2)
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\Action::make('Confirm')

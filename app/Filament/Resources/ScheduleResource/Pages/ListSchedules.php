@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ScheduleResource\Pages;
 
 use App\Enums\DaysOfTheWeek;
 use App\Filament\Resources\ScheduleResource;
+use App\Models\Schedule;
 use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;

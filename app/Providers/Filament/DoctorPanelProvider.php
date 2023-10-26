@@ -43,7 +43,10 @@ class DoctorPanelProvider extends PanelProvider
             ->font('roboto')
             ->favicon(asset('images/logo.png'))
             ->tenant(Clinic::class)
-            ->tenantMiddleware([ApplyTenantScopes::class], isPersistent: true)
+            ->tenantMiddleware([
+                ApplyTenantScopes::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
+            ], isPersistent: true)
             ->discoverResources(in: app_path('Filament/Doctor/Resources'), for: 'App\\Filament\\Doctor\\Resources')
             ->discoverPages(in: app_path('Filament/Doctor/Pages'), for: 'App\\Filament\\Doctor\\Pages')
             ->pages([
@@ -65,9 +68,13 @@ class DoctorPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 AssignGlobalScopes::class,
+                \Hasnayeen\Themes\Http\Middleware\SetTheme::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->plugin(
+                \Hasnayeen\Themes\ThemesPlugin::make()
+            );
     }
 }

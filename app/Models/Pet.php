@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\PetSpecies;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,8 +17,14 @@ class Pet extends Model
     use HasFactory;
 
     protected $casts = [
-        'species' => PetSpecies::class
+        'species' => PetSpecies::class,
+        'date_of_birth' => 'datetime'
     ];
+
+    public function scopeOwner(Builder $query, User $owner): void
+    {
+        $query->where('owner_id', $owner->id);
+    }
 
     protected $fillable = [
         'name','date_of_birth','species','type', 'owner_id', 'avatar'

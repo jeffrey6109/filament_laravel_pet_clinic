@@ -91,7 +91,7 @@ class PetResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('date_of_birth')
-                    ->date()
+                    ->date(config('app.date_format'))
                     ->sortable(),
 
                 TextColumn::make('species')

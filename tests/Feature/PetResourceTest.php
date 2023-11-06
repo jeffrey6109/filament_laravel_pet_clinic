@@ -1,7 +1,9 @@
 <?php
+use App\Enums\PetSpecies;
 use App\Filament\Owner\Resources\PetResource;
+use App\Filament\Owner\Resources\PetResource\Pages\CreatePet;
+use App\Filament\Owner\Resources\PetResource\Pages\EditPet;
 use App\Filament\Owner\Resources\PetResource\Pages\ListPets;
-use App\Filament\Resources\PetResource\Pages\CreatePet;
 use App\Models\Pet;
 use App\Models\Role;
 use App\Models\User;
@@ -111,4 +113,76 @@ it('can create pets', function () {
             'type' =>  $newPet->type,
             'species' => $newPet->species,
         ]);
+});
+
+it('validate form errors on create', function () {
+    $newPet = Pet::factory()
+        ->for($this->ownerUser, relationship: 'owner')
+        ->make();
+
+    Livewire::test(CreatePet::class)
+        ->fillForm([
+            'name' => $newPet->name,
+        ])
+        ->call('create')
+        ->assertHasFormErrors();
+
+        $this->assertDatabaseMissing(Pet::class, [
+            'name' => $newPet->name,
+            'date_of_birth' => $newPet->date_of_birth,
+            'type' =>  $newPet->type,
+            'species' => $newPet->species,
+        ]);
+})->with([
+    'missing name', ['date_of_birth']
+]);
+
+it('can retrieve the pet data for edit', function() {
+    $pet = Pet::factory()
+        ->for($this->ownerUser, relationship: 'owner')
+        ->create();
+
+    Livewire::test(EditPet::class, [
+        'record' => $pet->getRouteKey()
+    ])
+        ->assertFormSet([
+            'name' => $pet->name,
+            'date_of_birth' => $pet->date_of_birth,
+            'type' =>  $pet->type,
+            'species' => $pet->species->value,
+        ]);
+});
+
+it('can update the pet', function () {
+    $pet = Pet::factory()
+        ->for($this->ownerUser, relationship: 'owner')
+        ->create();
+
+    $newPetData = Pet::factory()
+    ->state ([
+        'name' => fake()->name(),
+        'date_of_birth' => fake()->date(),
+        'species' => 'Dogs',
+        'type' => 'Bulldog',
+    ])
+    ->for($this->ownerUser, relationship: 'owner')
+    ->make();
+
+        Livewire::test(EditPet::class, [
+            'record' => $pet->getRouteKey()
+        ])
+            ->fillForm([
+                'name' => $newPetData->name,
+                'date_of_birth' => $newPetData->date_of_birth->format('Y-m-d'),
+                'type' =>  $newPetData->type,
+                'species' => $newPetData->species->value,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect($pet->refresh())
+                ->name->toBe($newPetData->name)
+                ->date_of_birth->format('Y-m-d')->toBe($newPetData->date_of_birth->format('Y-m-d'))
+                ->type->toBe($newPetData->type)
+                ->species->value->toBe($newPetData->species->value);
 });

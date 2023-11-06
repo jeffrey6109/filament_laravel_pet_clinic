@@ -75,8 +75,8 @@ class PetResource extends Resource
                         ->relationship('clinics', 'name')
                         ->multiple()
                         ->preload()
-                        ->searchable()
-                        ->required(),
+                        ->searchable(),
+                        // ->required(),
                 ])->columns(2)
             ]);
     }

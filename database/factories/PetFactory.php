@@ -20,7 +20,7 @@ class PetFactory extends Factory
         return [
             'name' => fake()->name(),
             'date_of_birth' => fake()->date(),
-            'species' => PetSpecies::Bearded_Dragon,
+            'species' => PetSpecies::Geese,
             'type' => 'Eastern Bearded Dragon',
         ];
     }

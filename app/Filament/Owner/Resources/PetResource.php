@@ -4,10 +4,8 @@ namespace App\Filament\Owner\Resources;
 
 use App\Enums\PetSpecies;
 use App\Filament\Owner\Resources\PetResource\Pages;
-use App\Filament\Owner\Resources\PetResource\RelationManagers;
 use App\Models\Pet;
 use Filament\Facades\Filament;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -22,7 +20,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
 
 class PetResource extends Resource

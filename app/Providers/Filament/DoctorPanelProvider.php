@@ -45,7 +45,6 @@ class DoctorPanelProvider extends PanelProvider
             ->tenant(Clinic::class)
             ->tenantMiddleware([
                 ApplyTenantScopes::class,
-                \Hasnayeen\Themes\Http\Middleware\SetTheme::class
             ], isPersistent: true)
             ->discoverResources(in: app_path('Filament/Doctor/Resources'), for: 'App\\Filament\\Doctor\\Resources')
             ->discoverPages(in: app_path('Filament/Doctor/Pages'), for: 'App\\Filament\\Doctor\\Pages')
@@ -68,13 +67,9 @@ class DoctorPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 AssignGlobalScopes::class,
-                \Hasnayeen\Themes\Http\Middleware\SetTheme::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->plugin(
-                \Hasnayeen\Themes\ThemesPlugin::make()
-            );
+            ]);
     }
 }

@@ -1,21 +1,20 @@
 <?php
-use App\Enums\PetSpecies;
+
 use App\Filament\Owner\Resources\PetResource;
 use App\Filament\Owner\Resources\PetResource\Pages\CreatePet;
 use App\Filament\Owner\Resources\PetResource\Pages\EditPet;
 use App\Filament\Owner\Resources\PetResource\Pages\ListPets;
 use App\Models\Pet;
-use App\Models\Role;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
+use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
-use Illuminate\Database\Eloquent\Factories\Sequence;
+use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\seed;
-
 
 beforeEach(function () {
     seed();
@@ -24,38 +23,33 @@ beforeEach(function () {
 });
 
 // Owner Panel's PetResource
-it('renders the index page', function ()
-{
+it('renders the index page', function () {
     get(PetResource::getUrl('index', panel:'owner'))
         ->assertOk();
 });
 
-it('renders the create page', function ()
-{
+it('renders the create page', function () {
     get(PetResource::getUrl('create', panel:'owner'))
         ->assertOk();
 });
 
-it('renders the edit page', function ()
-{
+it('renders the edit page', function () {
     $pet = Pet::factory()
-        ->for($this->ownerUser , relationship: 'owner')
+        ->for($this->ownerUser, relationship: 'owner')
         ->create();
 
     get(PetResource::getUrl('edit', ['record' => $pet], panel:'owner'))
         ->assertOk();
 });
 
-it('cannot edit pets that do not belong to the owner', function()
-{
+it('cannot edit pets that do not belong to the owner', function () {
     $pet = Pet::factory()->create();
 
     get(PetResource::getUrl('edit', ['record' => $pet], panel:'owner'))
         ->assertStatus(403);
 });
 
-it('can list pets', function ()
-{
+it('can list pets', function () {
     $pets = Pet::factory(3)
         ->for($this->ownerUser, relationship: 'owner')
         ->create();
@@ -91,9 +85,9 @@ it('only show pets for the current owner', function () {
     $otherPet = Pet::factory()
         ->for($otherOwner, relationship: 'owner')->create();
 
-        Livewire::test(ListPets::class)
-        ->assertSeeText($myPet->name)
-        ->assertDontSeeText($otherPet->name);
+    Livewire::test(ListPets::class)
+    ->assertSeeText($myPet->name)
+    ->assertDontSeeText($otherPet->name);
 });
 
 it('can create pets', function () {
@@ -111,12 +105,12 @@ it('can create pets', function () {
         ->call('create')
         ->assertHasNoFormErrors();
 
-        $this->assertDatabaseHas(Pet::class, [
-            'name' => $newPet->name,
-            'date_of_birth' => $newPet->date_of_birth,
-            'type' =>  $newPet->type,
-            'species' => $newPet->species,
-        ]);
+    $this->assertDatabaseHas(Pet::class, [
+        'name' => $newPet->name,
+        'date_of_birth' => $newPet->date_of_birth,
+        'type' =>  $newPet->type,
+        'species' => $newPet->species,
+    ]);
 });
 
 it('validate form errors on create', function (Pet $newPet) {
@@ -130,20 +124,20 @@ it('validate form errors on create', function (Pet $newPet) {
         ->call('create')
         ->assertHasFormErrors();
 
-        $this->assertDatabaseMissing(Pet::class, [
-            'name' => $newPet->name,
-            'date_of_birth' => $newPet->date_of_birth,
-            'type' =>  $newPet->type,
-            'species' => $newPet->species,
-        ]);
+    $this->assertDatabaseMissing(Pet::class, [
+        'name' => $newPet->name,
+        'date_of_birth' => $newPet->date_of_birth,
+        'type' =>  $newPet->type,
+        'species' => $newPet->species,
+    ]);
 })->with([
-    [fn() => Pet::factory()->state(['name' => null])->make(), 'missing name'],
-    [fn() => Pet::factory()->state(['date_of_birth' => null])->make(), 'missing date of birth'],
-    [fn() => Pet::factory()->state(['type' => null])->make(), 'missing type'],
-    [fn() => Pet::factory()->state(['species' => null])->make(), 'missing species'],
+    [fn () => Pet::factory()->state(['name' => null])->make(), 'missing name'],
+    [fn () => Pet::factory()->state(['date_of_birth' => null])->make(), 'missing date of birth'],
+    [fn () => Pet::factory()->state(['type' => null])->make(), 'missing type'],
+    [fn () => Pet::factory()->state(['species' => null])->make(), 'missing species'],
 ]);
 
-it('can retrieve the pet data for edit', function() {
+it('can retrieve the pet data for edit', function () {
     $pet = Pet::factory()
         ->for($this->ownerUser, relationship: 'owner')
         ->create();
@@ -165,7 +159,7 @@ it('can update the pet', function () {
         ->create();
 
     $newPetData = Pet::factory()
-    ->state ([
+    ->state([
         'name' => fake()->name(),
         'date_of_birth' => fake()->date(),
         'species' => 'Dogs',
@@ -174,23 +168,23 @@ it('can update the pet', function () {
     ->for($this->ownerUser, relationship: 'owner')
     ->make();
 
-        Livewire::test(EditPet::class, [
-            'record' => $pet->getRouteKey()
+    Livewire::test(EditPet::class, [
+        'record' => $pet->getRouteKey()
+    ])
+        ->fillForm([
+            'name' => $newPetData->name,
+            'date_of_birth' => $newPetData->date_of_birth->format('Y-m-d'),
+            'type' =>  $newPetData->type,
+            'species' => $newPetData->species->value,
         ])
-            ->fillForm([
-                'name' => $newPetData->name,
-                'date_of_birth' => $newPetData->date_of_birth->format('Y-m-d'),
-                'type' =>  $newPetData->type,
-                'species' => $newPetData->species->value,
-            ])
-            ->call('save')
-            ->assertHasNoFormErrors();
+        ->call('save')
+        ->assertHasNoFormErrors();
 
-        expect($pet->refresh())
-                ->name->toBe($newPetData->name)
-                ->date_of_birth->format('Y-m-d')->toBe($newPetData->date_of_birth->format('Y-m-d'))
-                ->type->toBe($newPetData->type)
-                ->species->value->toBe($newPetData->species->value);
+    expect($pet->refresh())
+            ->name->toBe($newPetData->name)
+            ->date_of_birth->format('Y-m-d')->toBe($newPetData->date_of_birth->format('Y-m-d'))
+            ->type->toBe($newPetData->type)
+            ->species->value->toBe($newPetData->species->value);
 });
 
 it('validate form errors on edit', function (Pet $updatedPet) {
@@ -198,7 +192,7 @@ it('validate form errors on edit', function (Pet $updatedPet) {
     ->for($this->ownerUser, relationship: 'owner')
     ->create();
 
-    Livewire::test(EditPet::class,  [
+    Livewire::test(EditPet::class, [
         'record' => $pet->getRouteKey()
     ])
         ->fillForm([
@@ -211,10 +205,10 @@ it('validate form errors on edit', function (Pet $updatedPet) {
         ->assertHasFormErrors();
 
 })->with([
-    [fn() => Pet::factory()->state(['name' => null])->make(), 'missing name'],
-    [fn() => Pet::factory()->state(['date_of_birth' => null])->make(), 'missing date of birth'],
-    [fn() => Pet::factory()->state(['type' => null])->make(), 'missing type'],
-    [fn() => Pet::factory()->state(['species' => null])->make(), 'missing species'],
+    [fn () => Pet::factory()->state(['name' => null])->make(), 'missing name'],
+    [fn () => Pet::factory()->state(['date_of_birth' => null])->make(), 'missing date of birth'],
+    [fn () => Pet::factory()->state(['type' => null])->make(), 'missing type'],
+    [fn () => Pet::factory()->state(['species' => null])->make(), 'missing species'],
 ]);
 
 it('can delete a pet from the edit pet form', function () {
@@ -222,7 +216,7 @@ it('can delete a pet from the edit pet form', function () {
     ->for($this->ownerUser, relationship: 'owner')
     ->create();
 
-    Livewire::test(EditPet::class,  [
+    Livewire::test(EditPet::class, [
         'record' => $pet->getRouteKey()
     ])
     ->callAction(DeleteAction::class);
@@ -241,3 +235,28 @@ it('can delete a pet from the list of pets', function () {
 
     $this->assertModelMissing($pet);
 });
+
+// it('can upload pet image', function() {
+//     $newPet = Pet::factory()
+//         ->for($this->ownerUser, relationship: 'owner')
+//         ->make();
+
+//     Storage::fake('avatars');
+
+//     $file = UploadedFile::fake()->image('avatar.png');
+
+//     Livewire::test(CreatePet::class)
+//     ->fillForm([
+//         'name' => $newPet->name,
+//         'date_of_birth' => $newPet->date_of_birth,
+//         'type' =>  $newPet->type,
+//         'species' => $newPet->species,
+//         'avatar' => $file,
+//     ])
+//     ->call('create')
+//     ->assertHasNoFormErrors();
+
+//     $pet = Pet::first();
+
+//     Storage::disk('avatars')->assertExists( $pet->avatar);
+// });

@@ -42,7 +42,7 @@ class UserFactory extends Factory
     {
         $Role = Role::whereName($roleName)->first();
 
-        return $this->state(function (array $attributes) use ($Role)  {
+        return $this->state(function (array $attributes) use ($Role) {
             return [
                 'role_id' => $Role->id,
             ];

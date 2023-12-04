@@ -8,6 +8,7 @@ use App\Filament\Doctor\Resources\AppointmentResource\RelationManagers\NotesRela
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Slot;
+use App\Models\Pet;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
@@ -20,9 +21,14 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Support\Enums\Alignment;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
+use Illuminate\Database\Eloquent\Model;
 
 class AppointmentResource extends Resource
 {
@@ -32,6 +38,11 @@ class AppointmentResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function getOptionString(Model $record): string
+    {
+        return view('filament.components.select-pet-results', compact('record'))->render();
+    }
+
     public static function form(Form $form): Form
     {
         $doctorRole = Role::whereName('doctor')->first();
@@ -39,7 +50,8 @@ class AppointmentResource extends Resource
             ->schema([
                 Section::make([
                     Select::make('pet_id')
-                        ->relationship('pet', 'name')
+                        ->label('Pet')
+                        ->allowHtml()
                         ->required()
                         ->searchable()
                         ->preload()
@@ -50,7 +62,21 @@ class AppointmentResource extends Resource
                                     No pets available for this clinic.
                                 </span>'
                             ) : ''
-                        ),
+                        )
+                        ->getSearchResultsUsing(function (string $search) {
+                            $pets = Pet::where('name', 'like', "%{$search}%")->limit(50)->get();
+
+                            return $pets->mapWithKeys(function ($pet) {
+                                return [$pet->getKey() => static::getOptionString($pet)];
+                            })->toArray();
+                        })
+                        ->options(function (): array {
+                            $pets = Pet::all();
+
+                            return $pets->mapWithKeys(function ($pet) {
+                                return [$pet->getKey() => static::getOptionString($pet)];
+                            })->toArray();
+                        }),
 
                     DatePicker::make('date')
                         ->native(false)
@@ -102,27 +128,39 @@ class AppointmentResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('pet.name')
-                    ->searchable()
-                    ->sortable(),
+                Split::make([
+                    Stack::make([
+                        ImageColumn::make('pet.avatar')
+                            ->size(50)
+                            ->circular()
+                            ->grow(false),
 
-                TextColumn::make('status')
-                    ->searchable()
-                    ->sortable()
-                    ->badge(),
+                        TextColumn::make('pet.name')
+                            ->searchable()
+                            ->sortable()
+                            ->grow(false),
+                    ])
+                    ->space(1)
+                    ->alignment(Alignment::Center),
 
-                TextColumn::make('description')
-                    ->searchable(),
+                    TextColumn::make('status')
+                        ->searchable()
+                        ->sortable()
+                        ->badge(),
 
-                TextColumn::make('date')
-                    ->label('Appointment Date')
-                    ->date('M d, Y')
-                    ->sortable(),
+                    TextColumn::make('description')
+                        ->searchable(),
 
-                TextColumn::make('slot.formattedTime')
-                    ->label('Appointment Time')
-                    ->badge()
-                    ->sortable(),
+                    TextColumn::make('date')
+                        ->label('Appointment Date')
+                        ->date('M d, Y')
+                        ->sortable(),
+
+                    TextColumn::make('slot.formattedTime')
+                        ->label('Appointment Time')
+                        ->badge()
+                        ->sortable(),
+                ])
             ])
             ->filters([
                 //

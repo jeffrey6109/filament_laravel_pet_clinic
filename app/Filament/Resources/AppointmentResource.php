@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Slot;
 use App\Models\User;
+use App\Models\Pet;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -19,10 +20,15 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\Layout\Stack;
+use Filament\Support\Enums\Alignment;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Support\AvatarOptions;
 use Illuminate\Support\HtmlString;
 
 class AppointmentResource extends Resource
@@ -40,10 +46,26 @@ class AppointmentResource extends Resource
             ->schema([
                 Section::make([
                     Select::make('pet_id')
-                        ->relationship('pet', 'name')
+                        ->label('Pet')
+                        ->allowHtml()
                         ->required()
                         ->searchable()
-                        ->preload(),
+                        ->preload()
+                        ->columnSpanFull()
+                        ->getSearchResultsUsing(function (string $search) {
+                            $pets = Pet::where('name', 'like', "%{$search}%")->limit(50)->get();
+
+                            return $pets->mapWithKeys(function ($pet) {
+                                return [$pet->getKey() => AvatarOptions::getOptionString($pet)];
+                            })->toArray();
+                        })
+                        ->options(function (): array {
+                            $pets = Pet::all();
+
+                            return $pets->mapWithKeys(function ($pet) {
+                                return [$pet->getKey() => AvatarOptions::getOptionString($pet)];
+                            })->toArray();
+                        }),
 
                     Select::make('clinic_id')
                         ->relationship('clinic', 'name')
@@ -66,15 +88,20 @@ class AppointmentResource extends Resource
 
                     Select::make('doctor_id')
                         ->label('Doctor')
+                        ->searchable()
+                        ->allowHtml()
                         ->options(function (Get $get) use ($doctorRole) {
-                            return User::whereBelongsTo($doctorRole)
+                            $doctors = User::whereBelongsTo($doctorRole)
                                 ->whereHas('schedules', function (Builder $query) use ($get) {
                                     $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
                                     $query
                                         ->where('day_of_week', $dayOfTheWeek)
                                         ->where('clinic_id', $get('clinic_id'));
-                                })
-                                ->pluck('name', 'id');
+                                })->get();
+
+                            return $doctors->mapWithKeys(function ($doctor) {
+                                return [$doctor->getKey() => AvatarOptions::getOptionString($doctor)];
+                            })->toArray();
                         })
                         ->live()
                         ->native(false)
@@ -128,37 +155,49 @@ class AppointmentResource extends Resource
 
         return $table
             ->columns([
-                TextColumn::make('pet.name')
-                    ->searchable()
-                    ->sortable(),
+                Split::make([
+                    Stack::make([
+                        ImageColumn::make('pet.avatar')
+                            ->size(50)
+                            ->circular()
+                            ->grow(false),
 
-                TextColumn::make('status')
-                    ->searchable()
-                    ->sortable()
-                    ->badge(),
+                        TextColumn::make('pet.name')
+                            ->searchable()
+                            ->sortable()
+                            ->grow(false),
+                    ])
+                    ->space(1)
+                    ->alignment(Alignment::Center),
 
-                TextColumn::make('description')
-                    ->searchable(),
+                    TextColumn::make('status')
+                        ->searchable()
+                        ->sortable()
+                        ->badge(),
 
-                TextColumn::make('doctor.name')
-                    ->label('Doctor')
-                    ->searchable()
-                    ->sortable(),
+                    TextColumn::make('description')
+                        ->searchable(),
 
-                TextColumn::make('clinic.name')
-                    ->label('Clinic')
-                    ->searchable()
-                    ->sortable(),
+                    TextColumn::make('doctor.name')
+                        ->label('Doctor')
+                        ->searchable()
+                        ->sortable(),
 
-                TextColumn::make('date')
-                    ->label('Appointment Date')
-                    ->date('M d, Y')
-                    ->sortable(),
+                    TextColumn::make('clinic.name')
+                        ->label('Clinic')
+                        ->searchable()
+                        ->sortable(),
 
-                TextColumn::make('slot.formattedTime')
-                    ->label('Appointment Time')
-                    ->badge()
-                    ->sortable(),
+                    TextColumn::make('date')
+                        ->label('Appointment Date')
+                        ->date('M d, Y')
+                        ->sortable(),
+
+                    TextColumn::make('slot.formattedTime')
+                        ->label('Appointment Time')
+                        ->badge()
+                        ->sortable(),
+                ])
             ])
             ->filters([
                 SelectFilter::make('clinics')

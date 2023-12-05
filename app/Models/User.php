@@ -35,7 +35,7 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasAvata
         'phone',
         'password',
         'clinic_id',
-        'avatar_url'
+        'avatar'
     ];
 
     /**
@@ -71,7 +71,7 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasAvata
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return "/storage/$this->avatar_url";
+        return "/storage/$this->avatar";
     }
 
     public function role(): BelongsTo

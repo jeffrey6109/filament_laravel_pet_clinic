@@ -22,6 +22,7 @@ class PetFactory extends Factory
             'date_of_birth' => fake()->date(),
             'species' => PetSpecies::Geese,
             'type' => 'Eastern Bearded Dragon',
+            'avatar' => fake()->image(),
         ];
     }
 }

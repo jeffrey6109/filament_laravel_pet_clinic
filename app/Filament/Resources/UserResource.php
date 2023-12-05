@@ -26,7 +26,7 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Section::make([
-                    Forms\Components\FileUpload::make('avatar_url')
+                    Forms\Components\FileUpload::make('avatar')
                         ->label('Avatar')
                         ->image()
                         ->imageEditor(),
@@ -70,7 +70,7 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('avatar_url')
+                Tables\Columns\ImageColumn::make('avatar')
                     ->label('Avatar')
                     ->circular()
                     ->size(50),

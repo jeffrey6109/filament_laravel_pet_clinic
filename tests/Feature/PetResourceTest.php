@@ -236,27 +236,56 @@ it('can delete a pet from the list of pets', function () {
     $this->assertModelMissing($pet);
 });
 
-// it('can upload pet image', function() {
-//     $newPet = Pet::factory()
-//         ->for($this->ownerUser, relationship: 'owner')
-//         ->make();
+it('can upload pet image', function () {
+    $newPet = Pet::factory()
+        ->for($this->ownerUser, relationship: 'owner')
+        ->make();
 
-//     Storage::fake('avatars');
+    Storage::fake('avatars');
 
-//     $file = UploadedFile::fake()->image('avatar.png');
+    $file = UploadedFile::fake()->image('avatar.png');
 
-//     Livewire::test(CreatePet::class)
-//     ->fillForm([
-//         'name' => $newPet->name,
-//         'date_of_birth' => $newPet->date_of_birth,
-//         'type' =>  $newPet->type,
-//         'species' => $newPet->species,
-//         'avatar' => $file,
-//     ])
-//     ->call('create')
-//     ->assertHasNoFormErrors();
+    Livewire::test(CreatePet::class)
+    ->fillForm([
+        'name' => $newPet->name,
+        'date_of_birth' => $newPet->date_of_birth,
+        'type' =>  $newPet->type,
+        'species' => $newPet->species,
+        'avatar' => $file,
+    ])
+    ->call('create')
+    ->assertHasNoFormErrors();
 
-//     $pet = Pet::first();
+    $pet = Pet::first();
+    Storage::disk('avatars')->assertExists($pet->avatar);
+});
 
-//     Storage::disk('avatars')->assertExists( $pet->avatar);
-// });
+it('can update pet image', function () {
+    $pet = Pet::factory()
+        ->for($this->ownerUser, relationship: 'owner')
+        ->create();
+
+    Storage::fake('avatars');
+
+    $file = UploadedFile::fake()->image('new_avatar.png');
+
+    $newPet = Pet::factory()
+    ->for($this->ownerUser, relationship: 'owner')
+    ->make();
+
+    Livewire::test(EditPet::class, [
+        'record' => $pet->getRouteKey()
+    ])
+    ->fillForm([
+        'name' => $newPet->name,
+        'date_of_birth' => $newPet->date_of_birth,
+        'type' =>  $newPet->type,
+        'species' => $newPet->species,
+        'avatar' => $file,
+    ])
+    ->call('save')
+    ->assertHasNoFormErrors();
+
+    $pet->refresh();
+    Storage::disk('avatars')->assertExists($pet->avatar);
+});

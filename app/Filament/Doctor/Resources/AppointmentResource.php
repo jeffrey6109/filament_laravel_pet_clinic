@@ -28,7 +28,7 @@ use Filament\Tables\Columns\Layout\Stack;
 use Filament\Support\Enums\Alignment;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
-use Illuminate\Database\Eloquent\Model;
+use App\Support\AvatarOptions;
 
 class AppointmentResource extends Resource
 {
@@ -37,11 +37,6 @@ class AppointmentResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?int $navigationSort = 1;
-
-    public static function getOptionString(Model $record): string
-    {
-        return view('filament.components.select-pet-results', compact('record'))->render();
-    }
 
     public static function form(Form $form): Form
     {
@@ -54,6 +49,7 @@ class AppointmentResource extends Resource
                         ->allowHtml()
                         ->required()
                         ->searchable()
+                        ->columnSpanFull()
                         ->preload()
                         ->helperText(
                             fn () =>
@@ -67,14 +63,14 @@ class AppointmentResource extends Resource
                             $pets = Pet::where('name', 'like', "%{$search}%")->limit(50)->get();
 
                             return $pets->mapWithKeys(function ($pet) {
-                                return [$pet->getKey() => static::getOptionString($pet)];
+                                return [$pet->getKey() => AvatarOptions::getOptionString($pet)];
                             })->toArray();
                         })
                         ->options(function (): array {
                             $pets = Pet::all();
 
                             return $pets->mapWithKeys(function ($pet) {
-                                return [$pet->getKey() => static::getOptionString($pet)];
+                                return [$pet->getKey() => AvatarOptions::getOptionString($pet)];
                             })->toArray();
                         }),
 

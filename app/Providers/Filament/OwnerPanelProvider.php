@@ -7,6 +7,7 @@ use App\Filament\Pages\Auth\EditProfile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use App\Http\Middleware\AssignOwnerGlobalScopes;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -61,6 +62,7 @@ class OwnerPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                AssignOwnerGlobalScopes::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\HtmlString;
 use App\Support\AvatarOptions;
 
+
 class AppointmentResource extends Resource
 {
     protected static ?string $model = Appointment::class;
@@ -88,7 +89,7 @@ class AppointmentResource extends Resource
                         ->required()
                         ->options(function (Get $get) {
                             $clinic = Filament::getTenant();
-                            $doctor = Filament::auth()->user();
+                            $doctor = Filament::auth()->user()->id;
                             $dayOfTheWeek = Carbon::parse($get('date'))->dayOfWeek;
                             return Slot::availableFor($doctor, $dayOfTheWeek, $clinic->id)->get()->pluck('formattedTime', 'id');
                         })

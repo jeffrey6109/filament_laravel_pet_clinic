@@ -20,6 +20,8 @@ beforeEach(function () {
     seed();
     $this->ownerUser = User::whereName('Owner')->first();
     actingAs($this->ownerUser);
+    //Fake storage disk
+    Storage::fake('avatars');
 });
 
 // Owner Panel's PetResource

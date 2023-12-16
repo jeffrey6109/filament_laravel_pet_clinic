@@ -110,7 +110,7 @@ class AppointmentResource extends Resource
                             if(! $component->getOptions()) {
                                 return new HtmlString(
                                     '<span class="text-sm text-danger-600 dark:text-danger-400">
-                                        No Doctors available. Please select a different Clinic or Date
+                                        No doctors available. Please select a different Clinic or Date
                                     </span>'
                                 );
                             }

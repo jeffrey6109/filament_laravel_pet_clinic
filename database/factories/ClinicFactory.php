@@ -17,7 +17,7 @@ class ClinicFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name() . 'Clinic',
+            'name' => fake()->name() . ' Clinic',
             'address' => fake()->address(),
             'zip' => fake()->postcode(),
             'phone' => fake()->phoneNumber(),
